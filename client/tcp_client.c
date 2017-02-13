@@ -4,7 +4,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define SERVER_PORT 2476 
+#define SERVER_PORT 2550 
 /* arbitrary, but client and server 
    must agree */
 #define BUF_SIZE 4096
@@ -37,16 +37,19 @@ int main(int argc, char **argv)
     write(s, argv[2], strlen(argv[2])+1);
     /* Go get the file and write it to standard output.*/
     char name[32];
-    strcpy(name, "/home/whavey/receive/");
+    strcpy(name, "../receive/");
     strcat(name, argv[2]);
-    FILE *fp = fopen(name, "w");
+    FILE *fp;
+    fp  = fopen(name, "w");
     while (1) {
-        bytes = recv(s, buf, BUF_SIZE, 0);
+        bytes = read(s, buf, BUF_SIZE);
         /* read from socket */
         if (bytes <= 0) exit(0);
         /* check for end of file */
+	if (!fp) fatal("File failed to opne");
 	fwrite(buf,1,bytes,fp);
     }
+   fclose(fp);
 }
 fatal(char *string)
 {

@@ -4,7 +4,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#define SERVER_PORT 2476 
+#define SERVER_PORT 2550 
 /* arbitrary, but client and 
    server 
    must agree */
