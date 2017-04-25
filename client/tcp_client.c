@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     write(s, argv[2], strlen(argv[2])+1);
     /* Go get the file and write it to standard output.*/
     char name[32];
-    strcpy(name, "/home/whavey/receive/");
+    strcpy(name, "/home/whavey/networks/client/");
     strcat(name, argv[2]);
     FILE *fp = fopen(name, "w");
     while (1) {
