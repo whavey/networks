@@ -43,6 +43,8 @@ int main(int argc, char **argv)
 	size_t file_size;
 	char file_buffer[2000];
 	int bytes;
+	char ack[1];
+	int pkt_count=0;
 	while (1) {
 		client_len = sizeof(client);
 		if ((recvfrom(sd, buf, MAXLEN, 0, (struct sockaddr *)&client, &client_len)) < 0) {
@@ -52,8 +54,11 @@ int main(int argc, char **argv)
 		fp = fopen(buf,"rb");
 		while (!feof(fp)){
 			fread(file_buffer,64,1,fp);
-			printf("sending: %s\n",file_buffer);
+			printf("sending pkt: %d\n",pkt_count);
 			sendto(sd, file_buffer, 64, 0, (struct sockaddr *)&client, client_len);
+			recvfrom(sd,ack,1,0,(struct sockaddr *)&client, &client_len);
+			printf("%d ack: %d\n\n",pkt_count,ack[0]);
+			pkt_count = pkt_count+1;
 		}
 	}
 	fclose(fp);
