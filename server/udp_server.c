@@ -1,9 +1,14 @@
 #include <stdio.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#define SERVER_UDP_PORT 5000
-#define MAXLEN 	4096
+#define SERVER_UDP_PORT 2476 
+#define MAXLEN 4096 
+
 int main(int argc, char **argv)
 {
 	int sd, client_len, port, n;
@@ -34,17 +39,23 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Can't bind name to socket\n");
 		exit(1);
 	}
+	FILE *fp;
+	size_t file_size;
+	char file_buffer[2000];
+	int bytes;
 	while (1) {
 		client_len = sizeof(client);
-		if ((n = recvfrom(sd, buf, MAXLEN, 0, (struct sockaddr *)&client, &client_len)) < 0) {
+		if ((recvfrom(sd, buf, MAXLEN, 0, (struct sockaddr *)&client, &client_len)) < 0) {
 			fprintf(stderr, "Can't receive datagram\n");
 			exit(1);
 		}
-		if (sendto(sd, buf, n, 0, (struct sockaddr *)&client, client_len) != n) {
-			fprintf(stderr, "Can't send datagram\n");
-			exit(1);
+		fp = fopen(buf,"rb");
+		while (!feof(fp)){
+			fread(file_buffer,sizeof(int),1,fp);
+			sendto(sd, file_buffer, 1, 0, (struct sockaddr *)&client, client_len);
 		}
 	}
+	fclose(fp);
 	close(sd);
 	return(0);
 }
