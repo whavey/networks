@@ -51,8 +51,9 @@ int main(int argc, char **argv)
 		}
 		fp = fopen(buf,"rb");
 		while (!feof(fp)){
-			fread(file_buffer,sizeof(int),1,fp);
-			sendto(sd, file_buffer, 1, 0, (struct sockaddr *)&client, client_len);
+			fread(file_buffer,64,1,fp);
+			printf("sending: %s\n",file_buffer);
+			sendto(sd, file_buffer, 64, 0, (struct sockaddr *)&client, client_len);
 		}
 	}
 	fclose(fp);
