@@ -29,6 +29,9 @@ int main(int argc, char **argv)
 	unsigned long address;	
 	if (argc != 5) {
 		printf("usage: ./UDP_client server file packet_loss protocol_type\n");
+        fprintf(stderr, "Protocol Types:\n");
+        fprintf(stderr, "Default: None\n");
+        fprintf(stderr, "2: Go Back N\n");
 		exit(1);
 	}
 	if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -55,7 +58,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	
-	FILE *fp = fopen("/home/whavey/networks/client/receive","wb"); 
+	FILE *fp = fopen(file,"wb");
 	char ack[1] = {1};
 	char noack[1] = {0};
 	struct timeval tv;
@@ -64,25 +67,56 @@ int main(int argc, char **argv)
 
 	setsockopt(sd,SOL_SOCKET,SO_RCVTIMEO, (const char*)&tv,sizeof(struct timeval));
 
-	recvfrom(sd, rbuf, 64, 0, (struct sockaddr *)&server, &server_len);
-	sendto(sd, ack, sizeof(int), 0, (struct sockaddr *)&server, server_len);
 	int drop = atoi(argv[3]);
 	int count = 0;
-	while (1) { 
-		fwrite(rbuf,64,1,fp);
-		int n = recvfrom(sd, rbuf, 64, 0 , (struct sockaddr *)&server, &server_len);
-		if (n <= 0) break;
-		if (count % drop != 0) {
-			sendto(sd, ack, sizeof(int), 0, (struct sockaddr *)&server, server_len);
-		}
-		else {
-			sendto(sd, noack, sizeof(int), 0, (struct sockaddr *)&server, server_len);
-		}
-		count = count + 1;
+	if (atoi(argv[4]) == 2) {
+	// GO BACK N
+        printf("%s\n", "Starting Go Back N");
+	    int rxId = 0;
+	    int expectedId = 0;
+	    int justSkipped = 1;
+        while (1) {
+            recvfrom(sd, &rxId, sizeof(rxId), 0 , (struct sockaddr *)&server, &server_len);
+            int parseId = ntohl(rxId);
+            printf("#RCV packet id: %d\n", ntohl(rxId));
+            int n = recvfrom(sd, rbuf, 64, 0 , (struct sockaddr *)&server, &server_len);
+            if (n <= 0) break;
+            if (parseId == expectedId && (rand() % drop) != 0) {
+                printf("#ACK packet %d\n", parseId);
+                sendto(sd, &rxId, sizeof(rxId), 0, (struct sockaddr *)&server, server_len);
+                fwrite(rbuf,64,1,fp);
+                expectedId++;
+                justSkipped = 0;
+            } else {
+                printf("#DROP packet id: %d\n", ntohl(rxId));
+                int expectedIdParse = htonl(expectedId);
+                justSkipped = 1;
+                sendto(sd, &expectedIdParse, sizeof(expectedIdParse), 0, (struct sockaddr *)&server, server_len);
+            }
 
+        }
+        fclose(fp);
+        gettimeofday(&end, NULL); /* end delay measurement */
+        close(sd);
+        printf("#TRANSFER COMPLETE total packets :%d\n", ntohl(rxId));
+        return(0);
+	} else {
+        while (1) {
+            int n = recvfrom(sd, rbuf, 64, 0 , (struct sockaddr *)&server, &server_len);
+            if (n <= 0) break;
+            if (count % drop != 0) {
+                sendto(sd, ack, sizeof(int), 0, (struct sockaddr *)&server, server_len);
+            }
+            else {
+                sendto(sd, noack, sizeof(int), 0, (struct sockaddr *)&server, server_len);
+            }
+            fwrite(rbuf,64,1,fp);
+            count = count + 1;
+
+        }
+        fclose(fp);
+        gettimeofday(&end, NULL); /* end delay measurement */
+        close(sd);
+        return(0);
 	}
-	fclose(fp);
-	gettimeofday(&end, NULL); /* end delay measurement */
-	close(sd);
-	return(0);
 }
