@@ -110,13 +110,14 @@ int main(int argc, char **argv)
 
                 recv_size =  recvfrom(sd, &frame_recv, sizeof(frame_recv), 0, (struct sockaddr *)&client, &client_len);
 
-                if ( recv_size > 0 && frame_recv.type == 1 && frame_recv.ack == frame_send.seq_no)
+                if ( recv_size > 0 && frame_recv.type == 0 && frame_recv.ack == frame_send.seq_no)
                 {
-                    printf("[+] Ack received. Ack #: %d\n", frame_send.ack);
+                    printf("[+] Ack received. Ack #: %d\n", frame_recv.ack);
                     ack = 1;
                 }
                 else 
                 {
+                    printf("[-] Ack not received. Frame #: %d\n", frame_send.seq_no);
                     ack = 0;
                 }
 

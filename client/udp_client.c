@@ -106,19 +106,24 @@ int main(int argc, char **argv)
                 frame_send.type = 0;
                 frame_send.ack = frame_recv.seq_no;
                 sendto(sd, &frame_send, sizeof(frame_send), 0, (struct sockaddr *)&server, server_len);
+                
+                printf("[+] Received frame: %d\n", frame_recv.seq_no) ;
 
                 fwrite(frame_recv.packet.file_buffer, 64, 1, fp);
                 frame_id++;
             }
             else {
-                printf("#DROP packet id: %d\n", frame_id) ;
+
+                printf("[X] DROP packet id: %d\n", frame_id);
+                sendto(sd, &frame_send, sizeof(frame_send), 0, (struct sockaddr *)&server, server_len);
+
             }
         }
 
         fclose(fp);
         gettimeofday(&end, NULL); /* end delay measurement */
         close(sd);
-        printf("#TRANSFER COMPLETE total packets :%d\n", frame_id);
+        printf("[+] TRANSFER COMPLETE total packets :%d\n", frame_id);
 
         return(0);
     }
