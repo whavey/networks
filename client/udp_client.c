@@ -139,7 +139,7 @@ int main(int argc, char **argv)
             printf("#RCV packet id: %d\n", ntohl(rxId));
             int n = recvfrom(sd, rbuf, 64, 0 , (struct sockaddr *)&server, &server_len);
             if (n <= 0) break;
-            if (parseId == expectedId && (rand() % drop) != 0) {
+            if (parseId == expectedId && (rand() % (drop * 100)) != 0) {
                 printf("#ACK packet %d\n", parseId);
                 sendto(sd, &rxId, sizeof(rxId), 0, (struct sockaddr *)&server, server_len);
                 fwrite(rbuf,64,1,fp);
