@@ -47,7 +47,7 @@ int main(int argc, char **argv)
         printf("usage: ./UDP_client server file packet_loss protocol_type\n");
         fprintf(stderr, "Protocol Types:\n");
         fprintf(stderr, "Default: None\n");
-        fprintf(stderr, "2: Go Back N\n");
+        fprintf(stderr, "1:Stop-and-Wait; 2: Go Back N\n");
         exit(1);
     }
     if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
@@ -99,8 +99,8 @@ int main(int argc, char **argv)
 
         while(1) {
             recv_size = recvfrom(sd, &frame_recv, sizeof(Frame), 0 , (struct sockaddr *)&server, &server_len);
-
-            if (frame_recv.seq_no == frame_id)
+            if (recv_size <= 0) break;
+            if ( frame_recv.seq_no == frame_id && (rand() % drop) != 0 )
             {
                 frame_send.seq_no = 0;
                 frame_send.type = 0;
@@ -109,6 +109,9 @@ int main(int argc, char **argv)
 
                 fwrite(frame_recv.packet.file_buffer, 64, 1, fp);
                 frame_id++;
+            }
+            else {
+                printf("#DROP packet id: %d\n", frame_id) ;
             }
         }
 

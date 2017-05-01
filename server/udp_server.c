@@ -39,7 +39,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "Usage: %s [protocol_type]\n", argv[0]);
             fprintf(stderr, "Protocol Types:\n");
             fprintf(stderr, "Default: None\n");
-            fprintf(stderr, "2: Go Back N\n");
+            fprintf(stderr, "1:Stop-and-Wait; 2: Go Back N\n");
             exit(1);
     }
     /* Create a datagram socket */
